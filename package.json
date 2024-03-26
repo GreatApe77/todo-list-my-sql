@@ -1,0 +1,24 @@
+{
+  "name": "todo-list-mysql",
+  "version": "1.0.0",
+  "description": "Todo list built using a SQL database for learning purposes",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Mateus Navarro",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^20.11.30",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "mysql2": "^3.9.3",
+    "zod": "^3.22.4"
+  }
+}
