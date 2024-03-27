@@ -7,7 +7,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { HttpException } from "../../errors/HttpException";
 export class LoginService implements ILoginService {
+
   constructor(private readonly userRepo: IUserRepository) {}
+  
   async login(loggingUser: LogingUserData): Promise<string> {
     const user = await this.userRepo.getByUsername(loggingUser.username);
     if (!user) throw new HttpException("User not found", 404);
