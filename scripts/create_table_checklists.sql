@@ -1,0 +1,9 @@
+CREATE TABLE checklists(
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    description VARCHAR(255),
+    user_id INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT user_checklist_fk FOREIGN KEY (user_id)
+    REFERENCES users(id)
+);
