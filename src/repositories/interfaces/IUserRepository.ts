@@ -6,5 +6,6 @@ export type UserWithNoPassword = Omit<IUser,"password">
 export interface IUserRepository{
     save(user:SaveUserInfo):Promise<void>
     getById(id:number):Promise<UserWithNoPassword>
+    getByUsername(username:string):Promise<IUser|null>
 
 }

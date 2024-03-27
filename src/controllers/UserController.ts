@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import { IUserRepository, SaveUserInfo } from "../repositories/interfaces/IUserRepository";
 import { User } from "../models/implementations/User";
 import bcrypt from "bcrypt"
-import { handleErrors } from "../errors/handleErrors";
+import { handleInternalError } from "../errors/handleInternalError";
+import { ILoginService } from "../services/interfaces/ILoginService";
 type CreateUserDto = SaveUserInfo
 
 export class UserController{
 
 
-    constructor(private readonly userRepo:IUserRepository){}
+    constructor(private readonly userRepo:IUserRepository,private readonly loginService:ILoginService){}
 
 
     async registerUser(req:Request,res:Response){
@@ -17,9 +18,9 @@ export class UserController{
             const hashedPassword = await bcrypt.hash(userData.password,10)
             userData.password = hashedPassword 
         } catch (error) {
-            return handleErrors(error,res)
+           return handleInternalError(error,res)
         }
-        //const user = new User(userData)
+       
         try {
             
             await this.userRepo.save(userData)
@@ -30,8 +31,9 @@ export class UserController{
                     message:"User already exists"
                 })
             }
-            return handleErrors(error,res)
+            return handleInternalError(error,res)
         }
 
     }
+
 }
