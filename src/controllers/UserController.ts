@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { IUserRepository, SaveUserInfo } from "../repositories/interfaces/IUserRepository";
-import { User } from "../models/implementations/User";
 import bcrypt from "bcrypt"
 import { handleInternalError } from "../errors/handleInternalError";
-import { ILoginService } from "../services/interfaces/ILoginService";
+import { ILoginService, LogingUserData } from "../services/interfaces/ILoginService";
 type CreateUserDto = SaveUserInfo
-
+type LoginUserDto = LogingUserData
 export class UserController{
 
 
@@ -36,4 +35,16 @@ export class UserController{
 
     }
 
+    async loginAsUser(req:Request,res:Response){
+        const {username,password} = req.body as LoginUserDto
+        
+        try {
+            const token = await this.loginService.login({password,username})
+            return res.status(200).json({
+                token
+            })
+        } catch (error) {
+            return handleInternalError(error,res)
+        }
+    }
 }
