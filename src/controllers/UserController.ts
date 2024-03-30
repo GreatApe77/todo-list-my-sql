@@ -10,8 +10,10 @@ import {
   LogingUserData,
 } from "../services/interfaces/ILoginService";
 import { HttpException } from "../errors/HttpException";
+import { IUser } from "../models/interfaces/IUser";
 type CreateUserDto = SaveUserInfo;
 type LoginUserDto = LogingUserData;
+type UpdateUserDTO = Required<Pick<IUser,"full_name">>
 export class UserController {
   constructor(
     private readonly userRepo: IUserRepository,
@@ -60,6 +62,17 @@ export class UserController {
       return res.status(200).json(userData);
     } catch (error) {
       return handleInternalError(error, res);
+    }
+  }
+  async updateFullName(req:Request,res:Response){
+    const {full_name} = req.body as UpdateUserDTO
+    const id = parseInt(res.locals.payload.id as string);
+    try {
+      const result = await this.userRepo.updateFullName(id,full_name)
+      if(!result) throw new HttpException("User Not found",404)
+      return res.sendStatus(200)
+    } catch (error) {
+      return handleInternalError(error,res)
     }
   }
 }

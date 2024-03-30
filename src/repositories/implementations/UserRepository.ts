@@ -12,7 +12,7 @@ export class UserRepository implements IUserRepository {
     try {
       const db = await connect();
       const updatedAt = new Date();
-      await db.query("UPDATE users SET full_name=? updated_at=? WHERE id=?",[fullName,updatedAt,id]);
+      await db.query("UPDATE users SET full_name=?, updated_at=? WHERE id=?",[fullName,updatedAt,id]);
       return true
     } catch (error) {
       console.error(error);
