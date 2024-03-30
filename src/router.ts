@@ -20,8 +20,15 @@ router.patch("/users/me",RequestValidator.validateUpdateUserFullName,AuthUser.va
 router.get("/users/:userId/checklists/:checklistId",AuthUser.validateToken,(req:Request,res:Response)=>{
     return checklistController.getById(req,res)
 })
+
 router.get("/users/:userId/checklists/",AuthUser.validateToken,(req:Request,res:Response)=>{
     return checklistController.getUsersChecklist(req,res)
+})
+router.post("/users/:userId/checklists/",AuthUser.validateToken,(req:Request,res:Response)=>{
+    return checklistController.create(req,res)
+})
+router.delete("/users/:userId/checklists/:checklistId",AuthUser.validateToken,(req:Request,res:Response)=>{
+    
 })
 export {
     router
