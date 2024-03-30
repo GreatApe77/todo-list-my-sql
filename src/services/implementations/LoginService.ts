@@ -23,6 +23,6 @@ export class LoginService implements ILoginService {
     //const passwordMatch = await bcrypt.compare()
   }
   private generateJwt(payload: UserJWTPayload) {
-    return jwt.sign(payload, env.JWT_SECRET);
+    return jwt.sign(payload, env.JWT_SECRET,{expiresIn:"48h"});
   }
 }
