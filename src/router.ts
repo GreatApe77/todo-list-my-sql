@@ -1,5 +1,5 @@
 import {Request, Response, Router} from "express"
-import { usersController } from "./setup"
+import { checklistController, usersController } from "./setup"
 import { RequestValidator } from "./middlewares/RequestValidator"
 import { AuthUser } from "./middlewares/auth/AuthUser"
 
@@ -16,6 +16,12 @@ router.get("/users/me",AuthUser.validateToken,(req:Request,res:Response)=>{
 })
 router.patch("/users/me",RequestValidator.validateUpdateUserFullName,AuthUser.validateToken,(req:Request,res:Response)=>{
     return usersController.updateFullName(req,res)
+})
+router.get("/users/:userId/checklists/:checklistId",AuthUser.validateToken,(req:Request,res:Response)=>{
+    return checklistController.getById(req,res)
+})
+router.get("/users/:userId/checklists/",AuthUser.validateToken,(req:Request,res:Response)=>{
+    return checklistController.getUsersChecklist(req,res)
 })
 export {
     router
