@@ -1,4 +1,4 @@
-import {  RowDataPacket } from "mysql2";
+import { RowDataPacket } from "mysql2";
 import { connect } from "../../db/connect";
 import { IUser } from "../../models/interfaces/IUser";
 import {
@@ -8,12 +8,26 @@ import {
 } from "../interfaces/IUserRepository";
 
 export class UserRepository implements IUserRepository {
-  async getByUsername(username: string): Promise<IUser|null> {
+  async updateFullName(id: number, fullName: string): Promise<boolean> {
+    try {
+      const db = await connect();
+      const updatedAt = new Date();
+      await db.query("UPDATE users SET full_name=? updated_at=? WHERE id=?",[fullName,updatedAt,id]);
+      return true
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  }
+  async getByUsername(username: string): Promise<IUser | null> {
     const db = await connect();
-    const [result] = await db.query<IUser[] & RowDataPacket[][]>("SELECT * FROM users WHERE username=?",[username])
+    const [result] = await db.query<IUser[] & RowDataPacket[][]>(
+      "SELECT * FROM users WHERE username=?",
+      [username]
+    );
     //console.log(result)
-    if(result.length===0) return null
-    return result[0]
+    if (result.length === 0) return null;
+    return result[0];
   }
   //private static readonly TABLE_NAME:string = "users"
   async save(user: SaveUserInfo): Promise<void> {
@@ -23,14 +37,16 @@ export class UserRepository implements IUserRepository {
       [user.username, user.password, user.full_name ? user.full_name : null]
     );
   }
-  async getById(id: number): Promise<UserWithNoPassword| null> {
+  async getById(id: number): Promise<UserWithNoPassword | null> {
     const db = await connect();
-    const [result] = await db.query<UserWithNoPassword[] & RowDataPacket[][]>("SELECT id,username,created_at,updated_at,full_name FROM users WHERE id=?",[id])
+    const [result] = await db.query<UserWithNoPassword[] & RowDataPacket[][]>(
+      "SELECT id,username,created_at,updated_at,full_name FROM users WHERE id=?",
+      [id]
+    );
     //console.log(result)
-    if(result.length===0) return null
-    return result[0]
+    if (result.length === 0) return null;
+    return result[0];
   }
 }
-
 
 //new UserRepository().getById(1).then(r=>console.log(r))

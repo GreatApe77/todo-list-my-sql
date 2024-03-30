@@ -7,5 +7,5 @@ export interface IUserRepository{
     save(user:SaveUserInfo):Promise<void>
     getById(id:number):Promise<UserWithNoPassword | null>
     getByUsername(username:string):Promise<IUser|null>
-
+    updateFullName(id:number,fullName:string):Promise<boolean>
 }
