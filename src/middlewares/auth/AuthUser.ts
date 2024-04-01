@@ -2,7 +2,7 @@ import { env } from "../../config/environment";
 import { HttpException } from "../../errors/HttpException";
 import { handleInternalError } from "../../errors/handleInternalError";
 import { Request, Response, NextFunction } from "express";
-import {verify} from "jsonwebtoken"
+import {verify,TokenExpiredError} from "jsonwebtoken"
 export class AuthUser{
     
   
@@ -15,6 +15,10 @@ export class AuthUser{
             res.locals.payload = payload
             next()
         } catch (error) {
+            if(error instanceof TokenExpiredError){
+                const exception = new HttpException("Token Expired",400)
+                return handleInternalError(exception,res)
+            }
             return handleInternalError(error,res)
         }
     }
