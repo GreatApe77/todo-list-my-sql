@@ -31,7 +31,7 @@ export class ChecklistRepository implements IChecklistRepository {
     result.forEach(row => {
       const checklistId = row.id;
   
-      // If checklist doesn't exist in the map, create a new checklist object
+      
       if (!checklistMap[checklistId]) {
         const checklist: ChecklistWithTodos = {
           id: row.id,
@@ -39,18 +39,18 @@ export class ChecklistRepository implements IChecklistRepository {
           user_id: row.user_id,
           created_at: row.created_at,
           updated_at: row.updated_at,
-          todos: [] // Initialize todos array
+          todos: [] 
         };
         checklists.push(checklist);
         checklistMap[checklistId] = checklist;
       }
   
-      // If the row contains todo data, add it to the corresponding checklist's todos array
+     
       if (row.todo_id) {
         const todo: ITodo = {
           id: row.todo_id,
           content: row.todo_content,
-          done: row.todo_done,
+          done: Boolean(row.todo_done),
           created_at: row.created_at,
           updated_at: row.updated_at,
           checklist_id: row.todo_checklist_id
@@ -58,27 +58,7 @@ export class ChecklistRepository implements IChecklistRepository {
         checklistMap[checklistId].todos.push(todo);
       }
     });
-    /* const db = await connect();
-    pageSize = pageSize <= 50 || pageSize >= 1 ? pageSize : 50;
-    const [result] = await db.query(
-      "SELECT c.updated_at AS checklist_updated_at, c.created_at AS checklist_created_at, c.id AS checklist_id,c.description AS checklist_description,t.id AS todo_id,t.content AS todo_content,t.done AS todo_done FROM checklists c JOIN todos t ON c.id = t.checklist_id JOIN users u ON c.user_id = u.id WHERE  u.id = ?  LIMIT ? OFFSET ?",
-
-      [userId, pageSize,offset]
-    );
-    console.log(result)
-    const formated =  result.map((result)=>{
-      return {
-        id:result.checklist_id,
-        description:result.checklist_description,
-        created_at:result.checklist_created_at,
-        updated_at:result.checklist_updated_at,
-        
-
-      }
-    })
     
-    console.log(formated)
-    //console.log(result); */
     return checklists;
 
   }
@@ -128,7 +108,7 @@ export class ChecklistRepository implements IChecklistRepository {
         const todo: ITodo = {
           id: row.todo_id,
           content: row.todo_content,
-          done: row.todo_done,
+          done: Boolean(row.todo_done),
           created_at: row.created_at,
           updated_at: row.updated_at,
           checklist_id: checklistId
