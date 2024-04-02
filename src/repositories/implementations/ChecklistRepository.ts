@@ -111,12 +111,33 @@ export class ChecklistRepository implements IChecklistRepository {
   async getById(checklistId: number): Promise<IChecklist | null> {
     const db = await connect();
     //pageSize = pageSize<=50 || pageSize>=1?pageSize : 50
-    const [result] = await db.query<IChecklist[] & RowDataPacket[][]>(
-      "SELECT * FROM checklists WHERE id=?",
+    const [result] = await db.query<RowDataPacket[]>(
+      "SELECT c.*,t.id AS todo_id, t.content AS todo_content, t.done AS todo_done FROM checklists c LEFT JOIN todos t ON t.checklist_id=c.id WHERE c.id=?",
       [checklistId]
     );
+    const checklist: ChecklistWithTodos = {
+      id: result[0].id,
+      description: result[0].description,
+      user_id: result[0].user_id,
+      created_at: result[0].created_at,
+      updated_at: result[0].updated_at,
+      todos: []
+    };
+    result.forEach(row => {
+      if (row.todo_id) {
+        const todo: ITodo = {
+          id: row.todo_id,
+          content: row.todo_content,
+          done: row.todo_done,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          checklist_id: checklistId
+        };
+        checklist.todos.push(todo);
+      }
+    });
     if (result.length === 0) return null;
-    return result[0];
+    return checklist
   }
   async getManyFromSpecificUser(
     userId: number,
@@ -157,7 +178,7 @@ export class ChecklistRepository implements IChecklistRepository {
 //.then((res)=>{console.log(res)})
 //new ChecklistRepository().updateDescription(1,"Tomei ja o banho mds")
 //.then((res)=>{console.log(res)})
-new ChecklistRepository()
-  .getManyFromSpecificUserWithTodos(73, 0, 50)
-  .then((res) => {
-    console.log(res);  });
+//new ChecklistRepository()
+///  .getManyFromSpecificUserWithTodos(73, 0, 50)
+//  .then((res) => {
+//    console.log(res);  });
