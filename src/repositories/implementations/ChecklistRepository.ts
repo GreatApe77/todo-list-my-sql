@@ -6,6 +6,7 @@ import {
   IChecklistRepository,
   SaveChecklistParams,
 } from "../interfaces/IChecklistRepository";
+import { ITodo } from "../../models/interfaces/ITodo";
 
 export class ChecklistRepository implements IChecklistRepository {
   async getManyFromSpecificUserWithTodos(
@@ -13,6 +14,50 @@ export class ChecklistRepository implements IChecklistRepository {
     offset: number,
     pageSize: number
   ): Promise<ChecklistWithTodos[]> {
+    const db = await connect();
+    pageSize = pageSize <= 50 || pageSize >= 1 ? pageSize : 50;
+    const [result] = await db.query<RowDataPacket[]>(
+      `SELECT c.*, t.id AS todo_id, t.content AS todo_content, t.done AS todo_done, t.checklist_id AS todo_checklist_id
+       FROM checklists c
+       LEFT JOIN todos t ON c.id = t.checklist_id
+       WHERE c.user_id = ?
+       ORDER BY c.id
+       LIMIT ?
+       OFFSET ?`,
+      [userId, pageSize, offset]
+    );
+    const checklists: ChecklistWithTodos[] = [];
+    const checklistMap: { [key: number]: ChecklistWithTodos } = {};
+    result.forEach(row => {
+      const checklistId = row.id;
+  
+      // If checklist doesn't exist in the map, create a new checklist object
+      if (!checklistMap[checklistId]) {
+        const checklist: ChecklistWithTodos = {
+          id: row.id,
+          description: row.description,
+          user_id: row.user_id,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          todos: [] // Initialize todos array
+        };
+        checklists.push(checklist);
+        checklistMap[checklistId] = checklist;
+      }
+  
+      // If the row contains todo data, add it to the corresponding checklist's todos array
+      if (row.todo_id) {
+        const todo: ITodo = {
+          id: row.todo_id,
+          content: row.todo_content,
+          done: row.todo_done,
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+          checklist_id: row.todo_checklist_id
+        };
+        checklistMap[checklistId].todos.push(todo);
+      }
+    });
     /* const db = await connect();
     pageSize = pageSize <= 50 || pageSize >= 1 ? pageSize : 50;
     const [result] = await db.query(
@@ -34,7 +79,8 @@ export class ChecklistRepository implements IChecklistRepository {
     
     console.log(formated)
     //console.log(result); */
-    return [];
+    return checklists;
+
   }
   async save(checklist: SaveChecklistParams): Promise<boolean> {
     try {
@@ -111,8 +157,7 @@ export class ChecklistRepository implements IChecklistRepository {
 //.then((res)=>{console.log(res)})
 //new ChecklistRepository().updateDescription(1,"Tomei ja o banho mds")
 //.then((res)=>{console.log(res)})
-//new ChecklistRepository()
-//  .getManyFromSpecificUserWithTodos(73, 0, 50)
-//  .then((res) => {
-//    console.log(res);
-//  });
+new ChecklistRepository()
+  .getManyFromSpecificUserWithTodos(73, 0, 50)
+  .then((res) => {
+    console.log(res);  });

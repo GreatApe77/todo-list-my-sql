@@ -47,7 +47,7 @@ export class ChecklistController{
             const authUserId = parseInt(res.locals.payload.id)
             if(userId!==authUserId) throw new HttpException("Unauthorized",403) 
             //await this.checklistsRepository.save(req.body)
-            const checklists = await this.checklistsRepository.getManyFromSpecificUser(userId,0,50)
+            const checklists = await this.checklistsRepository.getManyFromSpecificUserWithTodos(userId,0,50)
             //if(!checklist) throw new HttpException("Checklist not found",404)
 
             return res.status(200).json(checklists)
