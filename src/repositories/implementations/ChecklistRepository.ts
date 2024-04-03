@@ -1,4 +1,4 @@
-import { RowDataPacket } from "mysql2";
+import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { connect } from "../../db/connect";
 import { IChecklist } from "../../models/interfaces/IChecklist";
 import {
@@ -28,10 +28,9 @@ export class ChecklistRepository implements IChecklistRepository {
     );
     const checklists: ChecklistWithTodos[] = [];
     const checklistMap: { [key: number]: ChecklistWithTodos } = {};
-    result.forEach(row => {
+    result.forEach((row) => {
       const checklistId = row.id;
-  
-      
+
       if (!checklistMap[checklistId]) {
         const checklist: ChecklistWithTodos = {
           id: row.id,
@@ -39,13 +38,12 @@ export class ChecklistRepository implements IChecklistRepository {
           user_id: row.user_id,
           created_at: row.created_at,
           updated_at: row.updated_at,
-          todos: [] 
+          todos: [],
         };
         checklists.push(checklist);
         checklistMap[checklistId] = checklist;
       }
-  
-     
+
       if (row.todo_id) {
         const todo: ITodo = {
           id: row.todo_id,
@@ -53,14 +51,13 @@ export class ChecklistRepository implements IChecklistRepository {
           done: Boolean(row.todo_done),
           created_at: row.created_at,
           updated_at: row.updated_at,
-          checklist_id: row.todo_checklist_id
+          checklist_id: row.todo_checklist_id,
         };
         checklistMap[checklistId].todos.push(todo);
       }
     });
-    
-    return checklists;
 
+    return checklists;
   }
   async save(checklist: SaveChecklistParams): Promise<boolean> {
     try {
@@ -88,11 +85,18 @@ export class ChecklistRepository implements IChecklistRepository {
       return false;
     }
   }
-  async getById(checklistId: number): Promise<IChecklist | null> {
+  async getById(checklistId: number): Promise<ChecklistWithTodos | null> {
     const db = await connect();
     //pageSize = pageSize<=50 || pageSize>=1?pageSize : 50
     const [result] = await db.query<RowDataPacket[]>(
-      "SELECT c.*,t.id AS todo_id, t.content AS todo_content, t.done AS todo_done FROM checklists c LEFT JOIN todos t ON t.checklist_id=c.id WHERE c.id=?",
+      `SELECT c.*
+      ,t.id AS todo_id,
+      t.content AS todo_content,
+      t.done AS todo_done 
+      FROM checklists c 
+      LEFT JOIN todos t
+      ON t.checklist_id=c.id
+      WHERE c.id=?`,
       [checklistId]
     );
     const checklist: ChecklistWithTodos = {
@@ -101,9 +105,9 @@ export class ChecklistRepository implements IChecklistRepository {
       user_id: result[0].user_id,
       created_at: result[0].created_at,
       updated_at: result[0].updated_at,
-      todos: []
+      todos: [],
     };
-    result.forEach(row => {
+    result.forEach((row) => {
       if (row.todo_id) {
         const todo: ITodo = {
           id: row.todo_id,
@@ -111,13 +115,13 @@ export class ChecklistRepository implements IChecklistRepository {
           done: Boolean(row.todo_done),
           created_at: row.created_at,
           updated_at: row.updated_at,
-          checklist_id: checklistId
+          checklist_id: checklistId,
         };
         checklist.todos.push(todo);
       }
     });
     if (result.length === 0) return null;
-    return checklist
+    return checklist;
   }
   async getManyFromSpecificUser(
     userId: number,
@@ -137,15 +141,17 @@ export class ChecklistRepository implements IChecklistRepository {
 
   async updateDescription(
     checklistId: number,
-    checklistDescription: string
+    checklistDescription: string,
+    userId:number
   ): Promise<boolean> {
     try {
       const db = await connect();
       const updatedAt = new Date();
-      await db.query(
-        "UPDATE checklists SET description = ?, updated_at = ? WHERE id=?",
-        [checklistDescription, updatedAt, checklistId]
-      );
+      const [res] =await db.query<ResultSetHeader>(
+        `UPDATE checklists SET description = ?, updated_at = ? WHERE id=? AND user_id=?`,
+        [checklistDescription, updatedAt, checklistId,userId]
+      )
+        if(res.affectedRows!==1) return false
       return true;
     } catch (error) {
       console.error(error);

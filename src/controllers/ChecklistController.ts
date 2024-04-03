@@ -5,6 +5,9 @@ import { HttpException } from "../errors/HttpException";
 import { IChecklist } from "../models/interfaces/IChecklist";
 
 type CreateChecklistDTO = Pick<IChecklist,"description">
+type UpdateChecklistDTO = Pick<IChecklist,"description">& {
+    description:string|null
+}
 export class ChecklistController{
 
     constructor( private readonly checklistsRepository:IChecklistRepository){}
@@ -19,6 +22,19 @@ export class ChecklistController{
             return res.sendStatus(200)
         } catch (error) {
 
+            return handleInternalError(error,res)
+        }
+    }
+    async update(req:Request,res:Response){
+        try {
+            const checklistId = parseInt(req.params.checklistId)
+            const {description} = req.body as UpdateChecklistDTO
+            
+            const userId = parseInt(res.locals.payload.id as string);
+            const result = await this.checklistsRepository.updateDescription(checklistId,description,userId)
+            if(!result) throw new HttpException("Invalid Data",400)
+            return res.sendStatus(200)
+        } catch (error) {
             return handleInternalError(error,res)
         }
     }
